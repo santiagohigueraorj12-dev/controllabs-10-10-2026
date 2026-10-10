@@ -1,0 +1,13 @@
+# Dependencias de Node.js
+node_modules/
+
+# Variables de entorno y datos sensibles
+.env
+.env.*
+
+# Permitir archivos de ejemplo sin contraseñas reales
+!.env.example
+
+# Archivos generados
+dist/
+build/
