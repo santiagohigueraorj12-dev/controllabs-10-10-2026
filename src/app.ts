@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
+import apiRoutes from './routes';
 
 const app = express();
 
@@ -14,5 +15,7 @@ app.get('/api/v1/health', (req: Request, res: Response) => {
     timestamp: new Date().toISOString()
   });
 });
+
+app.use('/api/v1', apiRoutes);
 
 export default app;
