@@ -1,7 +1,8 @@
 import { Router } from 'express';
+import loanRoutes from './loan.routes';
 
 const router = Router();
 
-// Aquí se montan los routers de cada recurso: router.use('/recurso', recursoRoutes);
+router.use('/loans', loanRoutes);
 
 export default router;
