@@ -1,4 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
+import { DomainError } from '../errors/domain.error';
+
+const domainErrorStatus: Record<DomainError['code'], number> = {
+  VALIDATION_ERROR: 400,
+  NOT_FOUND: 404,
+  CONFLICT: 409
+};
 
 export const globalErrorHandler = (
   err: unknown,
@@ -8,6 +15,15 @@ export const globalErrorHandler = (
 ): void => {
   if (res.headersSent) {
     next(err);
+    return;
+  }
+
+  if (err instanceof DomainError) {
+    res.status(domainErrorStatus[err.code]).json({
+      success: false,
+      code: err.code,
+      error: err.message
+    });
     return;
   }
 
