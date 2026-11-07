@@ -1,0 +1,84 @@
+{
+  "info": {
+    "name": "ControlLabs - Sesión 3 Middlewares",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000" }
+  ],
+  "item": [
+    {
+      "name": "Health check",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/health"
+      }
+    },
+    {
+      "name": "A - Datos válidos (espera 501)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"aula\": \"301\",\n  \"numeroPC\": 12,\n  \"nombreGuardaEntrega\": \"Laura Gómez\",\n  \"instructorRecibe\": \"Carlos Ruiz\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/api/v1/loans"
+      }
+    },
+    {
+      "name": "B - Falta nombreGuardaEntrega (espera 400)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"aula\": \"301\",\n  \"numeroPC\": 12,\n  \"instructorRecibe\": \"Carlos Ruiz\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/api/v1/loans"
+      }
+    },
+    {
+      "name": "C - numeroPC como texto (espera 400)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"aula\": \"301\",\n  \"numeroPC\": \"doce\",\n  \"nombreGuardaEntrega\": \"Laura Gómez\",\n  \"instructorRecibe\": \"Carlos Ruiz\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/api/v1/loans"
+      }
+    },
+    {
+      "name": "D - Error del servidor (espera 500, requiere ruta temporal)",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/__test/error"
+      }
+    },
+    {
+      "name": "Ruta inexistente (espera 404)",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/nope"
+      }
+    },
+    {
+      "name": "JSON malformado (espera 400)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"aula\": ",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/api/v1/loans"
+      }
+    }
+  ]
+}
