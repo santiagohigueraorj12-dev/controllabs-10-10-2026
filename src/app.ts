@@ -1,10 +1,12 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import apiRoutes from './routes';
+import { requestLogger } from './middlewares/logger.middleware';
 
 const app = express();
 
 app.use(cors());
+app.use(requestLogger);
 app.use(express.json());
 
 // Health Check Endpoint
