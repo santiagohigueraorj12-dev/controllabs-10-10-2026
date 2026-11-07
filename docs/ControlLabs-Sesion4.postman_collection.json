@@ -1,0 +1,113 @@
+{
+  "info": {
+    "name": "ControlLabs - Sesión 4 Capa de servicios",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000" },
+    { "key": "roomId", "value": "d3eebc99-9c0b-4ef8-bb6d-6bb9bd380d44" }
+  ],
+  "item": [
+    {
+      "name": "1 - Crear préstamo (espera 201)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"roomId\": \"d3eebc99-9c0b-4ef8-bb6d-6bb9bd380d44\",\n  \"instructorId\": \"c2eebc99-9c0b-4ef8-bb6d-6bb9bd380c33\",\n  \"guardaId\": \"b1eebc99-9c0b-4ef8-bb6d-6bb9bd380b22\",\n  \"numeroPc\": 1\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/api/v1/loans"
+      }
+    },
+    {
+      "name": "2 - Buscar por ambiente (espera 200)",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/loans/search?roomId={{roomId}}"
+      }
+    },
+    {
+      "name": "3 - Detalle préstamo 1 (espera 200)",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/loans/1"
+      }
+    },
+    {
+      "name": "4 - Préstamo inexistente (espera 404)",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/loans/999"
+      }
+    },
+    {
+      "name": "5 - Aceptar préstamo 1 (espera 200)",
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/loans/1/accept"
+      }
+    },
+    {
+      "name": "6 - Aceptar otra vez (espera 409)",
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/loans/1/accept"
+      }
+    },
+    {
+      "name": "7 - numeroPc 0 (espera 400 VALIDATION_ERROR)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"roomId\": \"d3eebc99-9c0b-4ef8-bb6d-6bb9bd380d44\",\n  \"instructorId\": \"c2eebc99-9c0b-4ef8-bb6d-6bb9bd380c33\",\n  \"guardaId\": \"b1eebc99-9c0b-4ef8-bb6d-6bb9bd380b22\",\n  \"numeroPc\": 0\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/api/v1/loans"
+      }
+    },
+    {
+      "name": "8 - roomId no es UUID (espera 400)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"roomId\": \"301\",\n  \"instructorId\": \"c2eebc99-9c0b-4ef8-bb6d-6bb9bd380c33\",\n  \"guardaId\": \"b1eebc99-9c0b-4ef8-bb6d-6bb9bd380b22\",\n  \"numeroPc\": 1\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/api/v1/loans"
+      }
+    },
+    {
+      "name": "9 - Id no numérico (espera 400)",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/loans/abc"
+      }
+    },
+    {
+      "name": "10 - JSON malformado (espera 400)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"roomId\": ",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/api/v1/loans"
+      }
+    },
+    {
+      "name": "11 - Error del servidor (espera 500, requiere ruta temporal)",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/__test/error"
+      }
+    }
+  ]
+}
