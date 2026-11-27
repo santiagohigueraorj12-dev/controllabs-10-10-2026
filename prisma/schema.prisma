@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email           String     @unique @db.VarChar(255)
+  nombre          String     @db.VarChar(150)
+  rol             String     @db.VarChar(20)
+  activo          Boolean    @default(true)
+  createdAt       DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  instructorLoans Loan[]     @relation("LoanInstructor")
+  guardLoans      Loan[]     @relation("LoanGuard")
+  incidents       Incident[] @relation("IncidentReporter")
+
+  @@map("users")
+}
+
+model Room {
+  id           String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nombre       String      @unique @db.VarChar(100)
+  bloque       String      @db.VarChar(50)
+  capacidadPcs Int         @map("capacidad_pcs")
+  estado       String      @default("OPERATIVO") @db.VarChar(20)
+  equipment    Equipment[]
+  loans        Loan[]
+
+  @@map("rooms")
+}
+
+model Equipment {
+  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  placaSena   String     @unique @map("placa_sena") @db.VarChar(50)
+  codigoActivo String    @unique @map("codigo_activo") @db.VarChar(100)
+  tipo        String     @db.VarChar(50)
+  roomId      String     @map("room_id") @db.Uuid
+  estado      String     @default("OPERATIVO") @db.VarChar(20)
+  room        Room       @relation(fields: [roomId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  incidents   Incident[]
+
+  @@index([roomId], map: "idx_equipment_room")
+  @@map("equipment")
+}
+
+model Loan {
+  id           BigInt     @id @default(autoincrement())
+  roomId       String     @map("room_id") @db.Uuid
+  instructorId String     @map("instructor_id") @db.Uuid
+  guardaId     String     @map("guarda_id") @db.Uuid
+  numeroPc     Int        @map("numero_pc")
+  estado       String     @default("PENDIENTE_APROBACION") @db.VarChar(24)
+  createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  acceptedAt   DateTime?  @map("accepted_at") @db.Timestamptz(6)
+  room         Room       @relation(fields: [roomId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  instructor   User       @relation("LoanInstructor", fields: [instructorId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  guard        User       @relation("LoanGuard", fields: [guardaId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([roomId, createdAt(sort: Desc)], map: "idx_loans_room_created")
+  @@map("loans")
+}
+
+model Incident {
+  id          BigInt    @id @default(autoincrement())
+  equipmentId String    @map("equipment_id") @db.Uuid
+  reportedBy  String    @map("reported_by") @db.Uuid
+  descripcion String    @db.Text
+  prioridad   String    @db.VarChar(10)
+  estado      String    @default("PENDIENTE") @db.VarChar(16)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  reporter    User      @relation("IncidentReporter", fields: [reportedBy], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([equipmentId, estado], map: "idx_incidents_equipment_status")
+  @@map("incidents")
+}

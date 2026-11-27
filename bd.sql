@@ -80,21 +80,7 @@ CREATE TABLE loans (
 
 );
 
-CREATE TABLE loan_equipment (
 
-  loan_id BIGINT NOT NULL REFERENCES loans(id) ON DELETE RESTRICT,
-
-  equipment_id UUID NOT NULL REFERENCES equipment(id) ON DELETE RESTRICT,
-
-  assigned_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-
-  returned_at TIMESTAMPTZ,
-
-  CHECK (returned_at IS NULL OR returned_at >= assigned_at),
-
-  PRIMARY KEY (loan_id, equipment_id)
-
-);
 
 CREATE TABLE incidents (
 
@@ -119,8 +105,6 @@ CREATE INDEX idx_equipment_room ON equipment(room_id);
 CREATE INDEX idx_loans_room_created ON loans(room_id, created_at DESC);
 
 CREATE INDEX idx_incidents_equipment_status ON incidents(equipment_id, estado);
-
-CREATE UNIQUE INDEX uq_loan_equipment_active ON loan_equipment(equipment_id) WHERE returned_at IS NULL;
 
 -- =========================================================================
 
