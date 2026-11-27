@@ -15,6 +15,15 @@ const toLoanStatus = (value: string): LoanStatus => {
   throw new Error(`Estado de préstamo no reconocido en la base de datos: ${value}`);
 };
 
+// Prisma 6 no siempre reporta una violación de CHECK como P2004: con
+// PostgreSQL llega como PrismaClientUnknownRequestError con el SQLSTATE 23514
+// (por ejemplo numero_pc > 0). Se reconocen ambas formas.
+const isCheckConstraintViolation = (error: unknown): boolean =>
+  (error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === 'P2004') ||
+  (error instanceof Prisma.PrismaClientUnknownRequestError &&
+    /\b23514\b|violates check constraint/.test(error.message));
+
 export class PrismaLoanRepository implements LoanRepository {
   constructor(private readonly database: PrismaClient) {}
 
@@ -39,10 +48,7 @@ export class PrismaLoanRepository implements LoanRepository {
           'La sala, el instructor o el guarda indicados no existen.'
         );
       }
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2004'
-      ) {
+      if (isCheckConstraintViolation(error)) {
         throw new DomainError(
           'VALIDATION_ERROR',
           'Los datos del préstamo incumplen una restricción de la base de datos.'
