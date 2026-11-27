@@ -12,10 +12,13 @@ export interface Loan extends ICreateLoanDTO {
 
 export interface LoanFilters {
   roomId?: string;
+  instructorId?: string;
+  guardaId?: string;
 }
 
 export interface LoanRepository {
   create(input: ICreateLoanDTO): Promise<Loan>;
+  isActiveInstructor(id: string): Promise<boolean>;
   findAll(filters?: LoanFilters): Promise<Loan[]>;
   findById(id: string): Promise<Loan | null>;
   updateStatus(

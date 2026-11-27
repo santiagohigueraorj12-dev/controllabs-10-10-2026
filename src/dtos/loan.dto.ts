@@ -4,3 +4,9 @@ export interface ICreateLoanDTO {
   guardaId: string;
   numeroPc: number;
 }
+
+export interface ICreateLoanRequestDTO {
+  roomId: string;
+  instructorId: string;
+  numeroPc: number;
+}

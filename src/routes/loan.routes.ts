@@ -5,12 +5,33 @@ import {
   validateLoanPayload,
   validateLoanSearchQuery
 } from '../middlewares/validateLoan.middleware';
+import { authenticate, authorize } from '../middlewares/auth.middleware';
 
 const router = Router();
 
-router.post('/', validateLoanPayload, LoanController.createLoan);
-router.get('/search', validateLoanSearchQuery, LoanController.getLoansByFilter);
-router.get('/:id', validateLoanIdParameter, LoanController.getLoanById);
-router.put('/:id/accept', validateLoanIdParameter, LoanController.acceptLoanInventory);
+// Todas las rutas de préstamos exigen un JWT válido (401 si falta o es inválido).
+router.use(authenticate);
+
+// Solo el guarda genera préstamos; queda ligado a su identidad del token.
+router.post('/', authorize('GUARDA'), validateLoanPayload, LoanController.createLoan);
+router.get(
+  '/search',
+  authorize('ADMIN', 'GUARDA', 'INSTRUCTOR'),
+  validateLoanSearchQuery,
+  LoanController.getLoansByFilter
+);
+router.get(
+  '/:id',
+  authorize('ADMIN', 'GUARDA', 'INSTRUCTOR'),
+  validateLoanIdParameter,
+  LoanController.getLoanById
+);
+// Solo el instructor acepta; el servicio verifica que el préstamo sea suyo.
+router.put(
+  '/:id/accept',
+  authorize('INSTRUCTOR'),
+  validateLoanIdParameter,
+  LoanController.acceptLoanInventory
+);
 
 export default router;
