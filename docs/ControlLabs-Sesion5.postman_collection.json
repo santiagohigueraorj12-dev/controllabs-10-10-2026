@@ -1,0 +1,236 @@
+{
+  "info": {
+    "name": "ControlLabs - Sesión 5 PostgreSQL y Prisma",
+    "description": "Antes de probar: cambia la variable roomId por el UUID real de una sala (SELECT id FROM rooms WHERE nombre = 'Sala 301';). La petición 1 guarda loanId automáticamente.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000"
+    },
+    {
+      "key": "roomId",
+      "value": "REEMPLAZAR_POR_UUID_REAL_DE_SALA"
+    },
+    {
+      "key": "loanId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1 - Crear préstamo (espera 201)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set('loanId', pm.response.json().data.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"roomId\": \"{{roomId}}\",\n  \"instructorId\": \"c2eebc99-9c0b-4ef8-bb6d-6bb9bd380c33\",\n  \"guardaId\": \"b1eebc99-9c0b-4ef8-bb6d-6bb9bd380b22\",\n  \"numeroPc\": 1\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/v1/loans"
+      }
+    },
+    {
+      "name": "2 - Buscar por ambiente (espera 200)",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/loans/search?roomId={{roomId}}"
+      }
+    },
+    {
+      "name": "3 - Detalle del préstamo creado (espera 200)",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/loans/{{loanId}}"
+      }
+    },
+    {
+      "name": "4 - Préstamo inexistente (espera 404)",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/loans/99999"
+      }
+    },
+    {
+      "name": "5 - Aceptar préstamo (espera 200)",
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/loans/{{loanId}}/accept"
+      }
+    },
+    {
+      "name": "6 - Aceptar otra vez (espera 409)",
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/loans/{{loanId}}/accept"
+      }
+    },
+    {
+      "name": "7 - numeroPc 0, CHECK de PostgreSQL (espera 400)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"roomId\": \"{{roomId}}\",\n  \"instructorId\": \"c2eebc99-9c0b-4ef8-bb6d-6bb9bd380c33\",\n  \"guardaId\": \"b1eebc99-9c0b-4ef8-bb6d-6bb9bd380b22\",\n  \"numeroPc\": 0\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/v1/loans"
+      }
+    },
+    {
+      "name": "8 - Sala inexistente, FK (espera 400)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"roomId\": \"00000000-0000-4000-8000-000000000000\",\n  \"instructorId\": \"c2eebc99-9c0b-4ef8-bb6d-6bb9bd380c33\",\n  \"guardaId\": \"b1eebc99-9c0b-4ef8-bb6d-6bb9bd380b22\",\n  \"numeroPc\": 1\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/v1/loans"
+      }
+    },
+    {
+      "name": "9 - roomId no es UUID (espera 400)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"roomId\": \"301\",\n  \"instructorId\": \"c2eebc99-9c0b-4ef8-bb6d-6bb9bd380c33\",\n  \"guardaId\": \"b1eebc99-9c0b-4ef8-bb6d-6bb9bd380b22\",\n  \"numeroPc\": 1\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/v1/loans"
+      }
+    },
+    {
+      "name": "10 - Campo extra (espera 400)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"roomId\": \"{{roomId}}\",\n  \"instructorId\": \"c2eebc99-9c0b-4ef8-bb6d-6bb9bd380c33\",\n  \"guardaId\": \"b1eebc99-9c0b-4ef8-bb6d-6bb9bd380b22\",\n  \"numeroPc\": 1,\n  \"extra\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/v1/loans"
+      }
+    },
+    {
+      "name": "11 - Id no numérico (espera 400)",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/loans/abc"
+      }
+    },
+    {
+      "name": "12 - Filtro roomId inválido (espera 400)",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/loans/search?roomId=xyz"
+      }
+    },
+    {
+      "name": "13 - Aceptar inexistente (espera 404)",
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/loans/99999/accept"
+      }
+    },
+    {
+      "name": "14 - JSON malformado (espera 400)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"roomId\": ",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/v1/loans"
+      }
+    },
+    {
+      "name": "15 - Error de prueba (espera 500 genérico)",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/__test/error"
+      }
+    },
+    {
+      "name": "16 - Ruta inexistente (espera 404)",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/no-existe"
+      }
+    }
+  ]
+}
