@@ -21,6 +21,13 @@ app.get('/api/v1/health', (req: Request, res: Response) => {
 
 app.use('/api/v1', apiRoutes);
 
+// Ruta temporal para comprobar el 500 genérico; no existe en producción.
+if (process.env.NODE_ENV !== 'production') {
+  app.get('/__test/error', (_req, _res, next) => {
+    next(new Error('Error de prueba'));
+  });
+}
+
 // Ninguna ruta coincidió
 app.use((_req: Request, res: Response) => {
   res.status(404).json({ success: false, error: 'Ruta no encontrada.' });
