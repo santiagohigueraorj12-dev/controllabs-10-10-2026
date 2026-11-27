@@ -1,0 +1,452 @@
+{
+  "info": {
+    "name": "ControlLabs - Sesión 6 JWT y RBAC",
+    "description": "Antes de probar: 1) pon en la variable password la contraseña de prueba asignada a los usuarios (no se versiona); 2) cambia roomId por el UUID real de una sala. Ejecuta las peticiones en orden: los logins guardan guardToken e instructorToken y la creación guarda loanId. La petición 15 usa instructor2.prueba@sena.edu.co, un usuario de prueba que no viene en bd.sql (ver bitácora).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000"
+    },
+    {
+      "key": "password",
+      "value": ""
+    },
+    {
+      "key": "roomId",
+      "value": "REEMPLAZAR_POR_UUID_REAL_DE_SALA"
+    },
+    {
+      "key": "instructorId",
+      "value": "c2eebc99-9c0b-4ef8-bb6d-6bb9bd380c33"
+    },
+    {
+      "key": "guardToken",
+      "value": ""
+    },
+    {
+      "key": "instructorToken",
+      "value": ""
+    },
+    {
+      "key": "otherInstructorToken",
+      "value": ""
+    },
+    {
+      "key": "loanId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1 - Login guarda (espera 200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set('guardToken', pm.response.json().data.accessToken);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"guarda.seguridad@sena.edu.co\",\n  \"password\": \"{{password}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/v1/auth/login"
+      }
+    },
+    {
+      "name": "2 - Perfil del guarda /auth/me (espera 200)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{guardToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/auth/me"
+      }
+    },
+    {
+      "name": "3 - Guarda crea préstamo sin guardaId (espera 201)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set('loanId', pm.response.json().data.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{guardToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"roomId\": \"{{roomId}}\",\n  \"instructorId\": \"{{instructorId}}\",\n  \"numeroPc\": 12\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/v1/loans"
+      }
+    },
+    {
+      "name": "4 - Guarda lista sus préstamos (espera 200)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{guardToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/loans/search"
+      }
+    },
+    {
+      "name": "5 - Guarda intenta aceptar (espera 403)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{guardToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/loans/{{loanId}}/accept"
+      }
+    },
+    {
+      "name": "6 - Login instructor asignado (espera 200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set('instructorToken', pm.response.json().data.accessToken);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"instructor.ti@sena.edu.co\",\n  \"password\": \"{{password}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/v1/auth/login"
+      }
+    },
+    {
+      "name": "7 - Instructor acepta su préstamo (espera 200)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{instructorToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/loans/{{loanId}}/accept"
+      }
+    },
+    {
+      "name": "8 - Instructor acepta otra vez (espera 409)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{instructorToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/loans/{{loanId}}/accept"
+      }
+    },
+    {
+      "name": "9 - Crear préstamo sin token (espera 401)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"roomId\": \"{{roomId}}\",\n  \"instructorId\": \"{{instructorId}}\",\n  \"numeroPc\": 12\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/v1/loans"
+      }
+    },
+    {
+      "name": "10 - Token alterado (espera 401)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{guardToken}}x",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/loans/search"
+      }
+    },
+    {
+      "name": "11 - Instructor intenta crear (espera 403)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{instructorToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"roomId\": \"{{roomId}}\",\n  \"instructorId\": \"{{instructorId}}\",\n  \"numeroPc\": 12\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/v1/loans"
+      }
+    },
+    {
+      "name": "12 - Guarda envía guardaId en el body (espera 400)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{guardToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"roomId\": \"{{roomId}}\",\n  \"instructorId\": \"{{instructorId}}\",\n  \"numeroPc\": 12,\n  \"guardaId\": \"b1eebc99-9c0b-4ef8-bb6d-6bb9bd380b22\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/v1/loans"
+      }
+    },
+    {
+      "name": "13 - Login contraseña incorrecta (espera 401)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"guarda.seguridad@sena.edu.co\",\n  \"password\": \"incorrecta\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/v1/auth/login"
+      }
+    },
+    {
+      "name": "14 - Login JSON inválido (espera 400)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"no-es-correo\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/v1/auth/login"
+      }
+    },
+    {
+      "name": "15 - Login de otro instructor (espera 200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set('otherInstructorToken', pm.response.json().data.accessToken);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"instructor2.prueba@sena.edu.co\",\n  \"password\": \"{{password}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/v1/auth/login"
+      }
+    },
+    {
+      "name": "16 - Otro instructor intenta aceptar (espera 403)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{otherInstructorToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/loans/{{loanId}}/accept"
+      }
+    }
+  ]
+}
