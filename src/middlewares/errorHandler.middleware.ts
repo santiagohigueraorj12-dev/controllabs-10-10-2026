@@ -3,6 +3,8 @@ import { DomainError } from '../errors/domain.error';
 
 const domainErrorStatus: Record<DomainError['code'], number> = {
   VALIDATION_ERROR: 400,
+    UNAUTHORIZED: 401,
+    FORBIDDEN: 403,
   NOT_FOUND: 404,
   CONFLICT: 409
 };
