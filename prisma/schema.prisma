@@ -12,6 +12,7 @@ model User {
   email           String     @unique @db.VarChar(255)
   nombre          String     @db.VarChar(150)
   rol             String     @db.VarChar(20)
+  passwordHash    String?    @map("password_hash") @db.Text
   activo          Boolean    @default(true)
   createdAt       DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
   instructorLoans Loan[]     @relation("LoanInstructor")

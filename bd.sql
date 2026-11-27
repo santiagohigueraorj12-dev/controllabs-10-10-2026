@@ -22,6 +22,8 @@ CREATE TABLE users (
 
   rol VARCHAR(20) NOT NULL CHECK (rol IN ('ADMIN', 'GUARDA', 'INSTRUCTOR')),
 
+  password_hash TEXT,
+
   activo BOOLEAN NOT NULL DEFAULT TRUE,
 
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
