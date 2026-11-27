@@ -9,36 +9,17 @@ import {
 export class LoanService {
   constructor(private readonly loanRepository: LoanRepository) {}
 
-  public async createLoan(input: ICreateLoanDTO): Promise<Loan> {
-    if (!Number.isInteger(input.numeroPc) || input.numeroPc <= 0) {
-      throw new DomainError(
-        'VALIDATION_ERROR',
-        'El número de PCs debe ser un entero positivo.'
-      );
-    }
-
-    return this.loanRepository.create({
-      roomId: input.roomId.toLowerCase(),
-      instructorId: input.instructorId.toLowerCase(),
-      guardaId: input.guardaId.toLowerCase(),
-      numeroPc: input.numeroPc
-    });
+  // La forma del body ya la validó el middleware. La cantidad positiva y las
+  // FK las hace cumplir PostgreSQL; el repositorio traduce esos errores.
+  public createLoan(input: ICreateLoanDTO): Promise<Loan> {
+    return this.loanRepository.create(input);
   }
 
-  public async getLoans(filters: LoanFilters = {}): Promise<Loan[]> {
-    if (filters.roomId !== undefined && !this.isUuid(filters.roomId)) {
-      throw new DomainError(
-        'VALIDATION_ERROR',
-        'El filtro roomId debe ser un UUID válido.'
-      );
-    }
-    return this.loanRepository.findAll({
-      roomId: filters.roomId?.toLowerCase()
-    });
+  public getLoans(filters: LoanFilters = {}): Promise<Loan[]> {
+    return this.loanRepository.findAll(filters);
   }
 
-  public async getLoanDetail(id: number): Promise<Loan> {
-    this.validateId(id);
+  public async getLoanDetail(id: string): Promise<Loan> {
     const loan = await this.loanRepository.findById(id);
     if (!loan) {
       throw new DomainError(
@@ -49,8 +30,7 @@ export class LoanService {
     return loan;
   }
 
-  public async acceptLoan(id: number): Promise<Loan> {
-    this.validateId(id);
+  public async acceptLoan(id: string): Promise<Loan> {
     const updatedLoan = await this.loanRepository.updateStatus(
       id,
       'PENDIENTE_APROBACION',
@@ -71,18 +51,5 @@ export class LoanService {
       'CONFLICT',
       'El préstamo ya fue aceptado y no puede aceptarse nuevamente.'
     );
-  }
-
-  private validateId(id: number): void {
-    if (!Number.isInteger(id) || id <= 0) {
-      throw new DomainError(
-        'VALIDATION_ERROR',
-        'El identificador del préstamo debe ser un entero positivo.'
-      );
-    }
-  }
-
-  private isUuid(value: string): boolean {
-    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
   }
 }
